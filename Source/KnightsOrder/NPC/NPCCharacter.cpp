@@ -4,6 +4,11 @@
 #include "MassSignalSubsystem.h"
 #include "MassStateTreeFragments.h"
 #include "MassEntityManager.h"
+#include "MassNavigationFragments.h"
+#include "MassLookAtFragments.h"
+#include "NPC/EntityTagSubsystem.h"
+#include "MassLookAtSubsystem.h"
+#include "MassLookAtTypes.h"
 
 ANPCCharacter::ANPCCharacter()
 {
@@ -28,7 +33,7 @@ void ANPCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void ANPCCharacter::TalkToNPC()
+void ANPCCharacter::TalkToNPC(const FVector& lookAt)
 {
 	UWorld const* world = GetWorld();
 
@@ -37,12 +42,30 @@ void ANPCCharacter::TalkToNPC()
 
 	const UMassEntitySubsystem* EntitySubsystem = world->GetSubsystem<UMassEntitySubsystem>();
 	const FMassEntityManager& EntityManager = EntitySubsystem->GetEntityManager();
+	UEntityTagSubsystem* TagSubsystem = world->GetSubsystem<UEntityTagSubsystem>();
+
+	auto foundPlayers = TagSubsystem->GetCachedEntities(FName("Player"));
+	
+
 
 	FMassStateTreeInstanceFragment& InstanceFragment = EntityManager.GetFragmentDataChecked<FMassStateTreeInstanceFragment>(MassAgentComponent->GetEntityHandle());
 
 	UMassStateTreeSubsystem* StateTreeSubsystem = world->GetSubsystem<UMassStateTreeSubsystem>();
 	StateTreeSubsystem->FreeInstanceData(InstanceFragment.InstanceHandle);
 	UE_LOG(LogTemp, Warning, TEXT("NPC TalkToNPC triggered"));
-	
+
+	FMassMoveTargetFragment& MoveTarget = EntityManager.GetFragmentDataChecked<FMassMoveTargetFragment>(MassAgentComponent->GetEntityHandle());
+	MoveTarget.DesiredSpeed = FMassInt16Real{ 0.0f };
+	MoveTarget.IntentAtGoal = EMassMovementAction::Animate;
+
+	if (foundPlayers.Num() > 0)
+	{
+		UMassLookAtSubsystem* LookAtSubsystem = world->GetSubsystem<UMassLookAtSubsystem>();
+		FMassLookAtFragment& LookAt = EntityManager.GetFragmentDataChecked<FMassLookAtFragment>(MassAgentComponent->GetEntityHandle());
+		LookAt.OverrideState = FMassLookAtFragment::EOverrideState::ActiveOverrideOnly;
+		LookAt.LookAtMode = EMassLookAtMode::LookAtEntity;
+		LookAt.TrackedEntity = foundPlayers[0];
+	}
+
 }
 

@@ -29,7 +29,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category = "NPC")
-	void TalkToNPC();
+	void TalkToNPC(const FVector& lookAt);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Mass")
