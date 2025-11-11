@@ -26,7 +26,7 @@ void UAdvancedMovementProcessor::ConfigureQueries(const TSharedRef<FMassEntityMa
 void UAdvancedMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	const float deltaTime = Context.GetDeltaTimeSeconds();
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [deltaTime](FMassExecutionContext& QueryContext)
+	EntityQuery.ForEachEntityChunk(Context, [deltaTime](FMassExecutionContext& QueryContext)
 		{
 			const TArrayView<FAdvancedMovementFragment> AdvancedMovementFragments = QueryContext.GetMutableFragmentView<FAdvancedMovementFragment>();
 			const TArrayView<FTransformFragment> TransformFragments = QueryContext.GetMutableFragmentView<FTransformFragment>();

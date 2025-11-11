@@ -29,10 +29,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category = "NPC")
-	void TalkToNPC(const FVector& lookAt);
+	void TalkToNPC(const FVector& lookAt, AActor* interactingActor);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Mass")
 	UMassAgentComponent* MassAgentComponent;
+
+	UPROPERTY(EditAnywhere)
+	FVector LookAtOffset;
 
 };

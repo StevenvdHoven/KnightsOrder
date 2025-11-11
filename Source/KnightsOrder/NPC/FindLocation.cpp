@@ -38,18 +38,12 @@ EStateTreeRunStatus FFindRandomLocation::EnterState(FStateTreeExecutionContext& 
 
 	const FVector AgentLocation = TransformFragment->GetTransform().GetLocation();
 
-	UE_LOG(LogTemp, Log, TEXT("FindLocation: Entity %d current location: %s"),
-		Entity.Index, *AgentLocation.ToString());
-
 	// --- Compute a new location around the agent ---
 	const FVector NewLocation = AgentLocation + FVector(
 		FMath::RandRange(-InstanceData.SearchAreaMinMax.X, InstanceData.SearchAreaMinMax.X),
 		FMath::RandRange(-InstanceData.SearchAreaMinMax.Y, InstanceData.SearchAreaMinMax.Y),
 		0.0f
 	);
-
-	UE_LOG(LogTemp, Log, TEXT("FindLocation: Entity %d new target location: %s"),
-		Entity.Index, *NewLocation.ToString());
 
 	// --- Write to StateTree Output (this is what downstream tasks will read) ---
 	InstanceData.OutputLocation.EndOfPathPosition = NewLocation;
@@ -168,7 +162,6 @@ EStateTreeRunStatus FSetLocationToEntity::EnterState(FStateTreeExecutionContext&
 
 	if (!InstanceData.EntityHandle.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SetLocationToEntity: TargetEntity is not valid!"));
 		return EStateTreeRunStatus::Failed;
 	}
 
