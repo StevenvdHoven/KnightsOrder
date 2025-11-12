@@ -19,6 +19,7 @@ void UEntityTagProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&
 void UEntityTagProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	UEntityTagSubsystem* TagSubsystem = EntityManager.GetWorld()->GetSubsystem<UEntityTagSubsystem>();
+	TagSubsystem->ClearCachedEntities();
 	TMap<FName,TArray<FMassEntityHandle>> TaggedEntities;
 
 	EntityQuery.ForEachEntityChunk(Context, [&](FMassExecutionContext& Context)

@@ -11,6 +11,7 @@
 #include "MassLookAtTypes.h"
 #include "SmartRotating.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NPC/EntitySimpleDialogues.h"
 
 ANPCCharacter::ANPCCharacter()
 {
@@ -75,6 +76,7 @@ void ANPCCharacter::TalkToNPC(const FVector& lookAt, AActor* interactingActor)
 		smartRotActorFrag->TargetActor = interactingActor;
 
 		UE_LOG(LogTemp, Log, TEXT("NPC LookAt Player Entity"));
+		UE_LOG(LogTemp, Log, TEXT("Target Actor: %s"), *interactingActor->GetName());
 
 		EntityManager.Defer().RemoveTag<FSmartRotatedWithMovementTag>(entityHandle);
 		EntityManager.Defer().AddTag<FSmartTrackingActorTag>(entityHandle);
@@ -82,3 +84,39 @@ void ANPCCharacter::TalkToNPC(const FVector& lookAt, AActor* interactingActor)
 
 }
 
+void ANPCCharacter::StopTalkingToNPC()
+{
+	UWorld const* world = GetWorld();
+	const FMassEntityHandle& entityHandle = MassAgentComponent->GetEntityHandle();
+
+	UMassSignalSubsystem* SignalSubsystem = world->GetSubsystem<UMassSignalSubsystem>();
+	SignalSubsystem->SignalEntity(FName("StopTalkingToNPC"), entityHandle);
+
+	const UMassEntitySubsystem* EntitySubsystem = world->GetSubsystem<UMassEntitySubsystem>();
+	const FMassEntityManager& EntityManager = EntitySubsystem->GetEntityManager();
+
+	FMassStateTreeInstanceFragment& InstanceFragment = EntityManager.GetFragmentDataChecked<FMassStateTreeInstanceFragment>(entityHandle);
+
+	UMassStateTreeSubsystem* StateTreeSubsystem = world->GetSubsystem<UMassStateTreeSubsystem>();
+	StateTreeSubsystem->FreeInstanceData(InstanceFragment.InstanceHandle);
+	UE_LOG(LogTemp, Warning, TEXT("NPC StopTalkingToNPC triggered"));
+
+	FMassMoveTargetFragment& MoveTarget = EntityManager.GetFragmentDataChecked<FMassMoveTargetFragment>(entityHandle);
+	MoveTarget.DesiredSpeed = FMassInt16Real{ 200.0f };
+	MoveTarget.IntentAtGoal = EMassMovementAction::Animate;
+
+	FSmartRotatingFragment* smartRotatingFragment{ EntityManager.GetFragmentDataPtr<FSmartRotatingFragment>(entityHandle) };
+	smartRotatingFragment->TargetEntity = FMassEntityHandle();
+
+	EntityManager.Defer().RemoveTag<FSmartTrackingActorTag>(entityHandle);
+	EntityManager.Defer().AddTag<FSmartRotatedWithMovementTag>(entityHandle);
+}
+
+void ANPCCharacter::GetDialogueInfo(FName& outSpeakerName, TArray<FText>& outAvailableDialogues) const
+{
+	UEntitySimpleDialoguesSubSystem const* dialogueSubsystem{ GetWorld()->GetSubsystem<UEntitySimpleDialoguesSubSystem>() };
+	const FMassEntityHandle& entityHandle{ MassAgentComponent->GetEntityHandle() };
+	const FEntitySimpleDialoguesFragment& dialoguesFragment{ dialogueSubsystem->GetDialoguesFragment(entityHandle) };
+	outSpeakerName = dialoguesFragment.SpeakerName;
+	outAvailableDialogues = dialoguesFragment.AvailableDialogues;
+}

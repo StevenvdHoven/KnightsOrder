@@ -31,6 +31,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "NPC")
 	void TalkToNPC(const FVector& lookAt, AActor* interactingActor);
 
+	UFUNCTION(BlueprintCallable, Category = "NPC")
+	void StopTalkingToNPC();
+
+	UFUNCTION(BlueprintCallable, Category = "NPC")
+	void GetDialogueInfo(FName& outSpeakerName, TArray<FText>& outAvailableDialogues) const;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Mass")
 	UMassAgentComponent* MassAgentComponent;

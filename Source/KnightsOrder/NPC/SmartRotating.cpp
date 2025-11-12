@@ -41,18 +41,21 @@ void USmartRotatingProcessor::ConfigureQueries(const TSharedRef<FMassEntityManag
 	DefaultRotationQuery.AddConstSharedRequirement<FSmartRotatingSharedDataFragment>(EMassFragmentPresence::All);
 	DefaultRotationQuery.AddTagRequirement<FSmartRotatedWithMovementTag>(EMassFragmentPresence::None);
 	DefaultRotationQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::None);
+	DefaultRotationQuery.AddTagRequirement<FSmartTrackingActorTag>(EMassFragmentPresence::None);
 
 	MovementRotatioQuery.AddRequirement<FSmartRotatingFragment>(EMassFragmentAccess::ReadWrite);
 	MovementRotatioQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	MovementRotatioQuery.AddRequirement<FMassVelocityFragment>(EMassFragmentAccess::ReadOnly);
 	MovementRotatioQuery.AddConstSharedRequirement<FSmartRotatingSharedDataFragment>(EMassFragmentPresence::All);
-	MovementRotatioQuery.AddTagRequirement<FSmartRotatedWithMovementTag>(EMassFragmentPresence::All);
 	MovementRotatioQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::None);
+	MovementRotatioQuery.AddTagRequirement<FSmartTrackingActorTag>(EMassFragmentPresence::None);
+	MovementRotatioQuery.AddTagRequirement<FSmartRotatedWithMovementTag>(EMassFragmentPresence::All);
 
 	TrackingRotationQuery.AddRequirement<FSmartRotatingFragment>(EMassFragmentAccess::ReadWrite);
 	TrackingRotationQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	TrackingRotationQuery.AddConstSharedRequirement<FSmartRotatingSharedDataFragment>(EMassFragmentPresence::All);
 	TrackingRotationQuery.AddTagRequirement<FSmartRotatedWithMovementTag>(EMassFragmentPresence::None);
+	TrackingRotationQuery.AddTagRequirement<FSmartTrackingActorTag>(EMassFragmentPresence::None);
 	TrackingRotationQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::All);
 
 	ActorTrackingRotationQuery.AddRequirement<FSmartRotatingFragment>(EMassFragmentAccess::ReadWrite);
@@ -60,10 +63,8 @@ void USmartRotatingProcessor::ConfigureQueries(const TSharedRef<FMassEntityManag
 	ActorTrackingRotationQuery.AddRequirement<FSmartRotatingActorTrackingFragment>(EMassFragmentAccess::ReadOnly);
 	ActorTrackingRotationQuery.AddConstSharedRequirement<FSmartRotatingSharedDataFragment>(EMassFragmentPresence::All);
 	ActorTrackingRotationQuery.AddTagRequirement<FSmartRotatedWithMovementTag>(EMassFragmentPresence::None);
-	MovementRotatioQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::None);
-	ActorTrackingRotationQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::All);
-
-
+	ActorTrackingRotationQuery.AddTagRequirement<FSmartTrackEntityTag>(EMassFragmentPresence::None);
+	ActorTrackingRotationQuery.AddTagRequirement<FSmartTrackingActorTag>(EMassFragmentPresence::All);
 }
 
 void USmartRotatingProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -86,6 +87,7 @@ void USmartRotatingProcessor::ExecuteDefaultRotation(FMassEntityManager& EntityM
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
+			UE_LOG(LogTemp, Warning, TEXT("Executing Default Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				FSmartRotatingFragment& smartRotatingFragment{ smartRotatingFragments[entityIndex] };
@@ -120,6 +122,7 @@ void USmartRotatingProcessor::ExecuteMovementRotation(FMassEntityManager& Entity
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
+			UE_LOG(LogTemp, Warning, TEXT("Executing Movement Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				FSmartRotatingFragment& smartRotatingFragment{ smartRotatingFragments[entityIndex] };
@@ -155,6 +158,7 @@ void USmartRotatingProcessor::ExecuteTrackingRotation(FMassEntityManager& Entity
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
+			UE_LOG(LogTemp, Warning, TEXT("Executing Tracking Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				FSmartRotatingFragment& smartRotFrag{ smartRotatingFragments[entityIndex] };
@@ -192,7 +196,7 @@ void USmartRotatingProcessor::ExecuteTrackingRotation(FMassEntityManager& Entity
 
 void USmartRotatingProcessor::ExecuteActorTrackingRotation(FMassEntityManager& EntityManager, FMassExecutionContext& context)
 {
-	TrackingRotationQuery.ForEachEntityChunk(context, [&EntityManager](FMassExecutionContext& context)
+	ActorTrackingRotationQuery.ForEachEntityChunk(context, [&EntityManager](FMassExecutionContext& context)
 		{
 
 			const auto smartRotatingFragments{ context.GetMutableFragmentView<FSmartRotatingFragment>() };
@@ -204,6 +208,7 @@ void USmartRotatingProcessor::ExecuteActorTrackingRotation(FMassEntityManager& E
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
+			UE_LOG(LogTemp, Warning, TEXT("Executing Actor Tracking Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				const FSmartRotatingActorTrackingFragment& actorTrackingFrag{ smartRotActorFrag[entityIndex] };
@@ -222,6 +227,9 @@ void USmartRotatingProcessor::ExecuteActorTrackingRotation(FMassEntityManager& E
 				const FVector start = transform.GetLocation();
 				const FVector target = actorTrackingFrag.TargetActor->GetActorLocation();
 				const FVector targetDir = (target - start).GetSafeNormal();
+
+				UE_LOG(LogTemp, Warning, TEXT("Entity %d is tracking actor at location %s."), context.GetEntity(entityIndex).Index, *target.ToString());
+
 				if (targetDir.IsNearlyZero())
 					continue;
 
