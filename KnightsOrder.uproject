@@ -14,7 +14,8 @@
 				"UMG",
 				"MassEntity",
 				"MassSpawner",
-				"MassAIBehavior"
+				"MassAIBehavior",
+				"CoreUObject"
 			]
 		}
 	],

@@ -122,7 +122,6 @@ void USmartRotatingProcessor::ExecuteMovementRotation(FMassEntityManager& Entity
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
-			UE_LOG(LogTemp, Warning, TEXT("Executing Movement Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				FSmartRotatingFragment& smartRotatingFragment{ smartRotatingFragments[entityIndex] };
@@ -158,7 +157,6 @@ void USmartRotatingProcessor::ExecuteTrackingRotation(FMassEntityManager& Entity
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
-			UE_LOG(LogTemp, Warning, TEXT("Executing Tracking Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				FSmartRotatingFragment& smartRotFrag{ smartRotatingFragments[entityIndex] };
@@ -208,7 +206,6 @@ void USmartRotatingProcessor::ExecuteActorTrackingRotation(FMassEntityManager& E
 			const float deltaTime{ context.GetDeltaTimeSeconds() };
 
 			const int32 NumEntities{ context.GetNumEntities() };
-			UE_LOG(LogTemp, Warning, TEXT("Executing Actor Tracking Rotation for %d entities."), NumEntities);
 			for (int32 entityIndex{ 0 }; entityIndex < NumEntities; ++entityIndex)
 			{
 				const FSmartRotatingActorTrackingFragment& actorTrackingFrag{ smartRotActorFrag[entityIndex] };
